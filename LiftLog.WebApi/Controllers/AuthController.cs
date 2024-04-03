@@ -1,5 +1,5 @@
 ﻿using LiftLog.WebApi.Utils.Models.Identity;
-using Microsoft.AspNetCore.Authentication;
+using LiftLog.WebApi.Utils.Services.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
@@ -12,12 +12,26 @@ namespace LiftLog.WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AuthenticationService _authenticationService;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<User> _userManager;
 
-        public AuthController(AuthenticationService authenticationService, UserManager<IdentityUser> userManager)
+        public AuthController(AuthenticationService authenticationService, UserManager<User> userManager)
         {
             _authenticationService = authenticationService;
             _userManager = userManager;
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequestModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            string token = await _authenticationService.AuthenticateUser(model.Email, model.Password);
+
+            if (token == null)
+                return Unauthorized();
+
+            return Ok(new { Token = token });
         }
 
         [HttpPost("register")]
@@ -26,10 +40,9 @@ namespace LiftLog.WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var user = new User { FirstName = model.FirstName, LastName = model.LastName, UserName = model.UserName, Email = model.Email };
 
-            var user = new User { FirstName = model.FirstName, LastName = model.LastName, UserName = model.Email, Email = model.Email };
-
-            var result = await _userManager.CreateAsync(model, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
             {
@@ -37,11 +50,9 @@ namespace LiftLog.WebApi.Controllers
             }
 
             // Automatically sign in the user after registration (optional)
-            //string token = await _authenticationService.AuthenticateUserAsync(model.Email, model.Password);
+            string token = await _authenticationService.AuthenticateUser(model.Email, model.Password);
 
-            return Ok(/*new { Token = token }*/);
-
+            return Ok(new { Token = token });
         }
-
     }
 }

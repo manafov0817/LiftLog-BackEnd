@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace LiftLog.WebApi.Services
+namespace LiftLog.WebApi.Utils.Services.Auth
 {
     public class JwtTokenService
     {

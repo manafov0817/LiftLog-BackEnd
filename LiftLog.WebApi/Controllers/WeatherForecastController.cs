@@ -1,3 +1,4 @@
+using LiftLog.WebApi.Utils.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiftLog.WebApi.Controllers
@@ -6,6 +7,8 @@ namespace LiftLog.WebApi.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
+        private readonly JwtTokenService _jwtTokenService;
+
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -13,21 +16,16 @@ namespace LiftLog.WebApi.Controllers
 
         private readonly ILogger<WeatherForecastController> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, JwtTokenService jwtTokenService)
         {
+            _jwtTokenService = jwtTokenService;
             _logger = logger;
         }
 
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public string Get(string userId, string userEmail)
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+           return _jwtTokenService.GenerateToken(userId, userEmail);    
         }
     }
 }

@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Configuration;
+using LiftLog.WebApi.Utils.Services.Auth;
+using LiftLog.WebApi.Utils.Models.Identity;
+using LiftLog.WebApi.DbContexts;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-//IServiceCollection services = new ServiceCollection();
+var jwtConf = builder.Configuration.GetSection("Jwt").Get<JwtConfiguration>();
 
 builder.Services.AddControllers();
 builder.Services.AddAuthentication(options =>
@@ -22,23 +23,17 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
+        ValidIssuer = jwtConf.Issuer,
+        ValidAudience = jwtConf.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConf.SecretKey))
     };
-}); 
+});
+builder.Services.AddDbContext<IdentityContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped(jts => new JwtTokenService(jwtConf.SecretKey, jwtConf.Issuer,
+                                                      jwtConf.Audience, jwtConf.ExpiryInMinutes));
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-//if (!app.Environment.IsDevelopment())
-//{
-//    app.UseExceptionHandler("/Home/Error");
-//    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-//    app.UseHsts();
-//}
-
-// Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

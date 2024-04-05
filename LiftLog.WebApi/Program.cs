@@ -7,6 +7,7 @@ using LiftLog.WebApi.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using LiftLog.WebApi.Utils.Models.Emailing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,11 +35,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-JwtTokenService jwtServ = new(jwtConf.SecretKey, jwtConf.Issuer,
-                             jwtConf.Audience, jwtConf.ExpiryInMinutes);
-
-builder.Services.AddScoped(jts => jwtServ);
-
 builder.Services.AddDbContext<IdentityContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("IdentityConnection")));
 
@@ -46,8 +42,15 @@ builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityContext>()
                 .AddDefaultTokenProviders();
 
+builder.Services.AddScoped(jts => new JwtTokenService(jwtConf.SecretKey, jwtConf.Issuer,
+                                                      jwtConf.Audience, jwtConf.ExpiryInMinutes));
+builder.Services.AddScoped<AuthenticationService>();
+#endregion
 
-builder.Services.AddScoped(jts => new AuthenticationService(jwtServ));
+#region Emailing
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<LiftLog.WebApi.Utils.Models.Emailing.IEmailSender, EmailSender>();
+
 #endregion
 
 builder.Services.AddSwaggerGen(c =>

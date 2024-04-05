@@ -1,6 +1,6 @@
 @LiftLog.WebApi_HostAddress = http://localhost:5075
 
-GET {{LiftLog.WebApi_HostAddress}}/weatherforecast/
+GET {{LiftLog.WebApi_HostAddress}}/
 Accept: application/json
 
 ###

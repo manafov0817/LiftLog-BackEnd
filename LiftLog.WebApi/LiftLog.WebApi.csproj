@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,6 +7,10 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <UserSecretsId>adfac2c8-d4e0-49f8-997e-8955fd4fed21</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Controllers\s5mtp43z.c4t~" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />

@@ -1,9 +1,11 @@
-﻿using LiftLog.WebApi.Utils.Models.Identity;
+﻿using LiftLog.WebApi.Utils.Models.Emailing;
+using LiftLog.WebApi.Utils.Models.Identity;
 using LiftLog.WebApi.Utils.Services.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 
 namespace LiftLog.WebApi.Controllers
 {
@@ -12,11 +14,13 @@ namespace LiftLog.WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AuthenticationService _authenticationService;
-
-        public AuthController(AuthenticationService authenticationService)
+        private readonly IEmailSender _emailSender;
+ 
+        public AuthController(AuthenticationService authenticationService, IEmailSender emailSender)
         {
             _authenticationService = authenticationService;
-        }
+            _emailSender = emailSender;
+         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestModel model)
@@ -43,11 +47,17 @@ namespace LiftLog.WebApi.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
+          
+            bool sendCofirmationRes = await _emailSender.SendEmailAsync(new MailRequest(model.Email, "Email confirmation", "Please, confirm you email"));
+            if (!sendCofirmationRes)
+                return BadRequest("Error while sending email");
+
+           
             string token = await _authenticationService.AuthenticateUser(model.Email, model.Password);
 
             return Ok(new { Token = token });
         }
 
-
+   
     }
 }

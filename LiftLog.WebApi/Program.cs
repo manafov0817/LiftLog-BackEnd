@@ -11,7 +11,6 @@ using LiftLog.WebApi.Utils.Models.Emailing;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddControllers();
 
 #region Auth

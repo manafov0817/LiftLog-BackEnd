@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Options;
-using System.Net.Mail;
-using System.Net;
-
+using MimeKit;
+using MailKit;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 namespace LiftLog.WebApi.Utils.Models.Emailing
 {
     public interface IEmailSender
     {
-        Task SendEmailAsync(string email, string subject, string message);
+        Task<bool> SendEmailAsync(MailRequest mailrequest);
     }
 
     public class EmailSender : IEmailSender
@@ -18,26 +19,31 @@ namespace LiftLog.WebApi.Utils.Models.Emailing
             _emailSettings = emailSettings.Value;
         }
 
-        public async Task SendEmailAsync(string email, string subject, string message)
+        public async Task<bool> SendEmailAsync(MailRequest mailrequest)
         {
-            var smtpClient = new SmtpClient
+            try
             {
-                Host = _emailSettings.SmtpServer,
-                Port = _emailSettings.SmtpPort,
-                EnableSsl = true,
-                Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password)
-            };
+                var email = new MimeMessage();
+                email.Sender = MailboxAddress.Parse(_emailSettings.From);
+                email.To.Add(MailboxAddress.Parse(mailrequest.ToEmail));
+                email.Subject = mailrequest.Subject;
+                var builder = new BodyBuilder();
 
-            var mailMessage = new MailMessage
+                builder.HtmlBody = mailrequest.Body;
+                email.Body = builder.ToMessageBody();
+
+                using var smtp = new SmtpClient();
+                smtp.Connect(_emailSettings.SmtpServer, _emailSettings.SmtpPort, SecureSocketOptions.StartTls);
+                smtp.Authenticate(_emailSettings.From, _emailSettings.Password);
+                await smtp.SendAsync(email);
+                smtp.Disconnect(true);
+                return true;
+            }
+            catch
             {
-                From = new MailAddress(_emailSettings.From),
-                Subject = subject,
-                Body = message,
-                IsBodyHtml = true
-            };
-            mailMessage.To.Add(email);
+                return false;
+            }
 
-            await smtpClient.SendMailAsync(mailMessage);
         }
     }
 

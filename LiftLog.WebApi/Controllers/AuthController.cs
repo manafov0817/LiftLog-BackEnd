@@ -1,11 +1,13 @@
-﻿using LiftLog.WebApi.Utils.Models.Emailing;
-using LiftLog.WebApi.Utils.Models.Identity;
+﻿using LiftLog.WebApi.Utils.Models.Identity;
 using LiftLog.WebApi.Utils.Services.Auth;
+using LiftLog.WebApi.Utils.Services.Emailing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using System.Net;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace LiftLog.WebApi.Controllers
 {
@@ -15,12 +17,12 @@ namespace LiftLog.WebApi.Controllers
     {
         private readonly AuthenticationService _authenticationService;
         private readonly IEmailSender _emailSender;
- 
+
         public AuthController(AuthenticationService authenticationService, IEmailSender emailSender)
         {
             _authenticationService = authenticationService;
             _emailSender = emailSender;
-         }
+        }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestModel model)
@@ -28,12 +30,12 @@ namespace LiftLog.WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            string token = await _authenticationService.AuthenticateUser(model.Email, model.Password);
+            (HttpResponseMessage resp, string tokenOrError) = await _authenticationService.AuthenticateUser(model.Email, model.Password);
 
-            if (token == null)
-                return Unauthorized();
+            if (!resp.IsSuccessStatusCode)
+                return Unauthorized(tokenOrError);
 
-            return Ok(new { Token = token });
+            return Ok(new { Token = tokenOrError });
         }
 
         [HttpPost("register")]
@@ -42,22 +44,21 @@ namespace LiftLog.WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            IdentityResult result = await _authenticationService.CreateUserAsync(model);
+            (IdentityResult result, User user) = await _authenticationService.CreateUserAsync(model);
 
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-          
-            bool sendCofirmationRes = await _emailSender.SendEmailAsync(new MailRequest(model.Email, "Email confirmation", "Please, confirm you email"));
-            if (!sendCofirmationRes)
+            if (!await _emailSender.SendConfirmationEmailAsync(HttpContext.Request, user))
                 return BadRequest("Error while sending email");
 
-           
-            string token = await _authenticationService.AuthenticateUser(model.Email, model.Password);
-
-            return Ok(new { Token = token });
+            return Ok("User Successfully Created!");
         }
 
-   
+        [HttpGet("confirmEmail")]
+        public async Task<HttpResponseMessage> ConfirmEmail(string userId, string code)
+        {
+            return await _authenticationService.ConfirmEmail(userId, code);
+        }
     }
 }

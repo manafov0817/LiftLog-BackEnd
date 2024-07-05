@@ -7,6 +7,11 @@ using LiftLog.WebApi.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using LiftLog.WebApi.Utils.Services.Emailing;
+using LiftLog.Data.Abstract;
+using LiftLog.Data.Concrete.EfCore;
+using LiftLog.Business.Abstract;
+using LiftLog.Business.Concrete;
 using LiftLog.WebApi.Utils.Models.Emailing;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,7 +53,7 @@ builder.Services.AddScoped<AuthenticationService>();
 
 #region Emailing
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.AddTransient<LiftLog.WebApi.Utils.Models.Emailing.IEmailSender, EmailSender>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 #endregion
 
@@ -56,6 +61,12 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "LiftLogAPI", Version = "v1" });
 });
+
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddScoped<IProfileRepository, EfCoreProfileRepository>();
+builder.Services.AddScoped<IProfileService, ProfileManager>();
+
 
 var app = builder.Build();
 

@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using LiftLog.WebApi.Utils.Models.Identity;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json.Linq;
 using NLog;
+using System.Net;
 
 namespace LiftLog.WebApi.Utils.Services.Auth
 {
@@ -25,11 +28,11 @@ namespace LiftLog.WebApi.Utils.Services.Auth
             _mapper = mapper;
         }
 
-        public async Task<string?> AuthenticateUser(string userEmail, string password)
+        public async Task<(HttpResponseMessage, string)> AuthenticateUser(string userEmail, string password)
         {
             Logger.Info($"Searching user by email: {userEmail}");
             var user = await _userManager.FindByEmailAsync(userEmail);
-
+            string notFound = "";
             if (user == null)
             {
                 Logger.Info($"Searching user by username: {userEmail}");
@@ -38,8 +41,9 @@ namespace LiftLog.WebApi.Utils.Services.Auth
 
             if (user == null)
             {
-                Logger.Info($"Username or email not found: {userEmail}");
-                return null;
+                notFound = "Username or email not found";
+                Logger.Info($"{notFound}: {userEmail}");
+                return (new HttpResponseMessage(HttpStatusCode.NotFound), notFound);
             }
 
             var result = await _signinManager.PasswordSignInAsync(user, password, true, false);
@@ -47,14 +51,14 @@ namespace LiftLog.WebApi.Utils.Services.Auth
             if (!result.Succeeded)
             {
                 Logger.Info($"Invalid password for {userEmail}: {password.Substring(0, 3)}");
-                return null;
+                return (new HttpResponseMessage(HttpStatusCode.NotFound), notFound);
             }
 
             string resToken = result.Succeeded ? _jwtTokenService.GenerateToken(user.UserName, user.Email) : null;
 
             Logger.Info($"Signing In User. Username: {user.UserName}, First 10 digits of token: {resToken.Substring(0, 10)}");
 
-            return resToken;
+            return (new HttpResponseMessage(HttpStatusCode.OK), notFound);
         }
         public async Task<(IdentityResult, User)> CreateUserAsync(RegisterRequestModel model)
         {
@@ -69,5 +73,22 @@ namespace LiftLog.WebApi.Utils.Services.Auth
             catch { }
             return (result, user);
         }
+        public async Task<bool> ConfirmEmail(string userId, string code)
+        {
+
+            if (userId == null || code == null)
+                return false;
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return false;
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            Logger.Info($"Email confirmed for: {userId}");
+
+            return result.Succeeded;
+        }
+
     }
 }

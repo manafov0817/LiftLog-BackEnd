@@ -1,13 +1,11 @@
 ﻿using LiftLog.WebApi.Utils.Models.Identity;
 using LiftLog.WebApi.Utils.Services.Auth;
 using LiftLog.WebApi.Utils.Services.Emailing;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using System.Net;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace LiftLog.WebApi.Controllers
 {
@@ -58,7 +56,8 @@ namespace LiftLog.WebApi.Controllers
         [HttpGet("confirmEmail")]
         public async Task<HttpResponseMessage> ConfirmEmail(string userId, string code)
         {
-            return await _authenticationService.ConfirmEmail(userId, code);
+            bool res = await _authenticationService.ConfirmEmail(userId, code);
+            return new HttpResponseMessage(res ? HttpStatusCode.Accepted : HttpStatusCode.NotFound);
         }
     }
 }

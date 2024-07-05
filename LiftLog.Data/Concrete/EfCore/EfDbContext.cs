@@ -14,7 +14,7 @@ namespace LiftLog.Data.Concrete.EfCore
         public EfDbContext(DbContextOptions<EfDbContext> options) : base(options) { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Server=localhost;User Id=postgres;Password=maqa1221;Port=5433;Database=LiftLogDb");
+            optionsBuilder.UseNpgsql();
         }
         public DbSet<Profile> Profiles { get; set; }
     }

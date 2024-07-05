@@ -13,7 +13,8 @@ namespace LiftLog.Data.Concrete.EfCore
             using (var context = new TContext())
             {
                 await context.Set<TEntity>().AddAsync(entity);
-                return await context.SaveChangesAsync();
+                var res = await context.SaveChangesAsync();
+                return res;
             }
         }
 

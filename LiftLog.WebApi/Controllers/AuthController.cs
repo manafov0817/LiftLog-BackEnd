@@ -2,9 +2,7 @@
 using LiftLog.WebApi.Utils.Services.Auth;
 using LiftLog.WebApi.Utils.Services.Emailing;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using System.Net;
 
 namespace LiftLog.WebApi.Controllers

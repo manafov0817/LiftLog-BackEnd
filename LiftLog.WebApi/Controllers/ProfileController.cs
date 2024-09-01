@@ -1,17 +1,17 @@
 ﻿using AutoMapper;
 using LiftLog.Business.Abstract;
+using LiftLog.Entity.Models;
 using LiftLog.WebApi.Controllers.UtilControllers;
+using LiftLog.WebApi.Utils.Models.Mapping.MapModels;
 using Microsoft.AspNetCore.Mvc;
-using Profile = LiftLog.Entity.Models.Profile;
-
+ 
 namespace LiftLog.WebApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProfileController : ByUserController<Profile, IProfileService>
-    {
-        public ProfileController(IMapper mapper, IProfileService service) : base(mapper, service)
-        {
-        }
-    }
+
+    //[Route("api/[controller]")]
+    //[ApiController]
+    //public class ProfileController : CommonController<UserProfile, ProfileDTO, IUserProfileService>
+    //{
+    //    public ProfileController(IMapper mapper, IUserProfileService service) : base(mapper, service) { }
+    //}
 }

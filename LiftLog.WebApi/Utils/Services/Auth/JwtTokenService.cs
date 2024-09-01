@@ -20,27 +20,23 @@ namespace LiftLog.WebApi.Utils.Services.Auth
             _expiryInMinutes = expiryInMinutes;
         }
 
-        public string GenerateToken(string userName, string userEmail)
+        public string GenerateToken(ClaimsIdentity claimsIdentity)
         {
             SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_secretKey));
             SigningCredentials credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-
-            Claim[] claims =
+            JwtSecurityTokenHandler tokenHandler = new();
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userName),
-                new Claim(ClaimTypes.Email, userEmail),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                Subject = claimsIdentity,
+                Expires = DateTime.UtcNow.AddMinutes(_expiryInMinutes),
+                SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature),
+                Issuer = _issuer,
+                Audience = _audience,               
             };
 
-            JwtSecurityToken token = new JwtSecurityToken(_issuer,
-                                                          _audience,
-                                                          claims,
-                                                          DateTime.UtcNow.AddMinutes(_expiryInMinutes),
-                                                          signingCredentials: credentials);
-
-            string res = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return res;
+            var tokenItself = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(tokenItself);
+            return tokenString;
         }
     }
 }

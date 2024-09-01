@@ -1,4 +1,4 @@
-﻿namespace LiftLog.Data.Abstract
+﻿namespace LiftLog.Data.Abstract.Utils
 {
     public interface IGenericRepository<T> where T : class
     {

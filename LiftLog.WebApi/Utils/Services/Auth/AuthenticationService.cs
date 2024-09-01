@@ -1,38 +1,42 @@
 ﻿using AutoMapper;
+using LiftLog.Business.Abstract;
+using LiftLog.Entity.Models;
 using LiftLog.WebApi.Utils.Models.Identity;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Newtonsoft.Json.Linq;
 using NLog;
 using System.Net;
+using System.Security.Claims;
 
 namespace LiftLog.WebApi.Utils.Services.Auth
 {
     public class AuthenticationService
     {
-        private readonly JwtTokenService _jwtTokenService;
         private UserManager<User> _userManager;
-        private SignInManager<User> _signinManager;
         private readonly IMapper _mapper;
         private readonly Logger Logger = LogManager.GetLogger("AuthLogger");
+        private readonly IConfiguration _configuration;
+        private readonly IUserProfileService _userProfileService;
+        private readonly JwtTokenService _jwtTokenService;
 
         public AuthenticationService(UserManager<User> userManager,
-                                     JwtTokenService jwtTokenService,
-                                     SignInManager<User> signinManager,
                                      IMapper mapper,
-                                     ILogger<AuthenticationService> logger)
+                                     IConfiguration configuration,
+                                     IUserProfileService userProfileService,
+                                     JwtTokenService jwtTokenService
+                                     )
         {
-            _jwtTokenService = jwtTokenService;
             _userManager = userManager;
-            _signinManager = signinManager;
             _mapper = mapper;
+            _configuration = configuration;
+            _userProfileService = userProfileService;
+            _jwtTokenService = jwtTokenService;
         }
 
         public async Task<(HttpResponseMessage, string)> AuthenticateUser(string userEmail, string password)
         {
             Logger.Info($"Searching user by email: {userEmail}");
             var user = await _userManager.FindByEmailAsync(userEmail);
-            string notFound = "";
+            string notFound = "Username or password not found";
             if (user == null)
             {
                 Logger.Info($"Searching user by username: {userEmail}");
@@ -41,24 +45,37 @@ namespace LiftLog.WebApi.Utils.Services.Auth
 
             if (user == null)
             {
-                notFound = "Username or email not found";
                 Logger.Info($"{notFound}: {userEmail}");
                 return (new HttpResponseMessage(HttpStatusCode.NotFound), notFound);
             }
 
-            var result = await _signinManager.PasswordSignInAsync(user, password, true, false);
-
-            if (!result.Succeeded)
+            if (user != null && await _userManager.CheckPasswordAsync(user, password))
             {
-                Logger.Info($"Invalid password for {userEmail}: {password.Substring(0, 3)}");
-                return (new HttpResponseMessage(HttpStatusCode.NotFound), notFound);
+
+                ClaimsIdentity claimsIdentity = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, userEmail),
+                });
+
+                try
+                {
+                    var userProfile = await _userProfileService.GetByUserIdAsync(Guid.Parse(user.Id));
+                    claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userProfile.Id.ToString()));
+                }
+                catch (Exception ex) { }
+
+                var userClaims = await _userManager.GetClaimsAsync(user);
+                foreach (var claim in userClaims) claimsIdentity.AddClaim(claim);
+
+                string tokenString = _jwtTokenService.GenerateToken(claimsIdentity);
+
+                Logger.Info($"Signing In User. Username: {user.UserName}, First 10 digits of token: {tokenString.Substring(0, 10)}");
+
+                return (new HttpResponseMessage(HttpStatusCode.OK), tokenString);
             }
 
-            string resToken = result.Succeeded ? _jwtTokenService.GenerateToken(user.UserName, user.Email) : null;
-
-            Logger.Info($"Signing In User. Username: {user.UserName}, First 10 digits of token: {resToken.Substring(0, 10)}");
-
-            return (new HttpResponseMessage(HttpStatusCode.OK), notFound);
+            return (new HttpResponseMessage(HttpStatusCode.BadRequest), notFound);
         }
         public async Task<(IdentityResult, User)> CreateUserAsync(RegisterRequestModel model)
         {
@@ -69,6 +86,21 @@ namespace LiftLog.WebApi.Utils.Services.Auth
             {
                 Logger.Info($"Creating User: {model.ToString()}");
                 result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    // Add claims to the user
+                    await _userManager.AddClaimAsync(user, new Claim("UserRole", "Admin"));
+
+                    var createdUser = await _userManager.FindByEmailAsync(model.Email);
+
+                    if (createdUser is not null)
+                    {
+                        UserProfile profile = _mapper.Map<UserProfile>(model);
+                        profile.UserId = createdUser?.Id;
+                        await _userProfileService.CreateAsync(profile);
+                    }
+                }
             }
             catch { }
             return (result, user);
@@ -89,6 +121,11 @@ namespace LiftLog.WebApi.Utils.Services.Auth
 
             return result.Succeeded;
         }
-
+        public (string LogoutMessage, bool IsSucceeded) Logout(string token)
+        {
+            if (token == null)
+                return ("Token is required", false);
+            return ("Logged out successfully", true);
+        }
     }
 }

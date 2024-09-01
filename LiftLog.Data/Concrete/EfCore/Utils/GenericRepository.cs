@@ -1,11 +1,11 @@
-﻿using LiftLog.Data.Abstract;
-using LiftLog.Entity.Models;
-using Microsoft.EntityFrameworkCore; 
+﻿using LiftLog.Data.Abstract.Utils;
+using LiftLog.Entity.Models.CommonModels;
+using Microsoft.EntityFrameworkCore;
 
-namespace LiftLog.Data.Concrete.EfCore
+namespace LiftLog.Data.Concrete.EfCore.Utils
 {
     public class GenericRepository<TEntity, TContext> : IGenericRepository<TEntity>
-        where TEntity : CommonEntity
+        where TEntity : HasId
         where TContext : DbContext, new()
     {
         public async Task<int> CreateAsync(TEntity entity)

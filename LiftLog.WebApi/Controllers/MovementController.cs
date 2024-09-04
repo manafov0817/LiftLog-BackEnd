@@ -10,7 +10,7 @@ namespace LiftLog.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MovementController : ByUserProfileController<Movement, MovementDTO, IMovementService>
+    public class MovementController : CommonController<Movement, MovementDTO, IMovementService>
     {
         public MovementController(IMapper mapper, IMovementService service, IUserProfileService userProfileService) : base(mapper, service, userProfileService) { }
     }

@@ -9,7 +9,7 @@ namespace LiftLog.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WorkoutSessionLogController : ByUserProfileController<WorkoutSessionLog, WorkoutSessionLogDTO, IWorkoutSessionLogService>
+    public class WorkoutSessionLogController : CommonController<WorkoutSessionLog, WorkoutSessionLogDTO, IWorkoutSessionLogService>
     {
         public WorkoutSessionLogController(IMapper mapper, IWorkoutSessionLogService service, IUserProfileService userProfileService) : base(mapper, service, userProfileService) { }
     }

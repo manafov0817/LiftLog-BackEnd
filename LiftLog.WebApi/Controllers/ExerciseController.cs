@@ -11,7 +11,7 @@ namespace LiftLog.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ExerciseController : ByUserProfileController<Exercise, ExerciseDTO, IExerciseService>
+    public class ExerciseController : CommonController<Exercise, ExerciseDTO, IExerciseService>
     {
         public ExerciseController(IMapper mapper, IExerciseService service, IUserProfileService userProfileService) : base(mapper, service, userProfileService) { }
     }

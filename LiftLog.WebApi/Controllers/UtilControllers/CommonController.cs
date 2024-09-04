@@ -19,7 +19,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
         private readonly IMapper _mapper;
         private readonly TService _service;
 
-        public CommonController(IMapper mapper, TService service)
+        public CommonController(IMapper mapper, TService service, IUserProfileService userProfileService)
         {
             _mapper = mapper;
             _service = service;
@@ -31,43 +31,44 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             return userId != null ? Guid.Parse(userId) : Guid.Empty;
         }
 
-        [Authorize(Policy = "AdminOnly")]
-        [HttpGet]
+
+        [HttpGet("getAll")]
         public async Task<IActionResult> GetAll()
         {
             try
             {
-                var res = await _service.GetAllAsync();
+                var userProfileId = GetUserProfileIdFromToken();
+                var res = await _service.GetAllByUserProfileId(userProfileId);
                 return Ok(res);
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
-        [Authorize(Policy = "AdminOnly")]
-        [HttpGet("{id}")]
+        [HttpGet("getById/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             try
             {
-                var res = await _service.GetAllAsync();
+                var userProfileId = GetUserProfileIdFromToken();
+                var res = await _service.GetByIdAndUserProileId(userProfileId, id);
                 return Ok(res);
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
-        [Authorize(Policy = "AdminOnly")]
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] TMap entity)
         {
             try
             {
                 var model = _mapper.Map<T>(entity);
+                model.UserProfileId = GetUserProfileIdFromToken();
                 await _service.CreateAsync(model);
                 return Created();
             }
@@ -77,12 +78,13 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             }
         }
 
-        [Authorize(Policy = "AdminOnly")]
-        [HttpPut]
+        [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] T entity)
         {
             try
             {
+                if (entity.UserProfileId != GetUserProfileIdFromToken()) return NotFound();
+
                 if (await _service.UpdateAsync(entity) > 0) return Ok("Changes have been made");
                 else return BadRequest();
             }
@@ -92,18 +94,20 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             }
         }
 
-        [Authorize(Policy = "AdminOnly")]
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
+                var userProfileId = GetUserProfileIdFromToken();
+                var res = await _service.GetByIdAndUserProileId(userProfileId, id);
+                if (res.UserProfileId != userProfileId) return NotFound();
                 return Ok(await _service.DeleteAsync(id));
             }
             catch
             {
                 return NotFound();
             }
-        }         
+        }
     }
 }

@@ -11,8 +11,9 @@ namespace LiftLog.WebApi.Utils.Models.Mapping
             CreateMap<RegisterRequestModel, User>();
             CreateMap<ProfileDTO, LiftLog.Entity.Models.UserProfile>();
             CreateMap<MovementDTO, Movement>();
+            CreateMap<Movement, MovementDTO>();
+            CreateMap<ExerciseDTO, Exercise>();
             CreateMap<RegisterRequestModel, UserProfile>();
-
         }
     }
 }

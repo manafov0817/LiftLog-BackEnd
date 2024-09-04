@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-
-namespace LiftLog.WebApi.Utils.Models.Mapping.MapModels
+﻿namespace LiftLog.WebApi.Utils.Models.Mapping.MapModels
 {
 
-    public class WorkoutSessionDTO : HasUserId
+    public class WorkoutSessionDTO  
     {
         public Guid ExerciseId { get; set; }
     }

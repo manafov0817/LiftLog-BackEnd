@@ -38,8 +38,11 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             try
             {
                 var userProfileId = GetUserProfileIdFromToken();
-                var res = await _service.GetAllByUserProfileId(userProfileId);
-                return Ok(res);
+                var result = await _service.GetAllByUserProfileId(userProfileId);
+
+                var resultDTO = GetListDTO(result);
+
+                return Ok(resultDTO);
             }
             catch (Exception ex)
             {
@@ -47,11 +50,23 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             }
         }
 
+        private List<TMap> GetListDTO(List<T> result)
+        {
+            var resultDTO = new List<TMap>();
+            foreach (var item in result)
+                resultDTO.Add(_mapper.Map<TMap>(item));
+
+            return resultDTO;
+        }
+
         [HttpGet("getById/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             try
             {
+                if (id == Guid.Empty)
+                    return NotFound();
+
                 var userProfileId = GetUserProfileIdFromToken();
                 var res = await _service.GetByIdAndUserProileId(userProfileId, id);
                 return Ok(res);
@@ -92,7 +107,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             {
                 return BadRequest(ex.Message);
             }
-        }
+        }       
 
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)

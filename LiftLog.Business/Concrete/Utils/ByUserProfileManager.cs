@@ -18,5 +18,10 @@ namespace LiftLog.Business.Concrete.Utils
         {
             return await _repository.GetAllByUserProfileId(userProfileId);
         }
+
+        public async Task<T> GetByIdAndUserProileId(Guid userProfileId, Guid id)
+        {
+            return await _repository.GetByIdAndUserProileId(userProfileId, id);
+        }
     }
 }

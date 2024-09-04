@@ -2,7 +2,7 @@
 
 namespace LiftLog.WebApi.Utils.Models.Mapping.MapModels
 {
-    public class ProfileDTO : HasUserId
+    public class ProfileDTO 
     {
         public int FirstName { get; set; }
         public int LastName { get; set; }

@@ -1,9 +1,8 @@
 ﻿using LiftLog.Entity.Enums;
-using LiftLog.Entity.Models;
 
 namespace LiftLog.WebApi.Utils.Models.Mapping.MapModels
 {
-    public class ExerciseDTO:HasUserId
+    public class ExerciseDTO 
     {
         public string MovementName { get; set; }
         public WeightType WeightType { get; set; }

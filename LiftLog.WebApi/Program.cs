@@ -12,6 +12,7 @@ using LiftLog.WebApi.Utils.Services.Emailing;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -76,9 +77,7 @@ builder.Services.AddScoped<IWorkoutSessionRepository, EfCoreWorkoutSessionReposi
 builder.Services.AddScoped<IWorkoutSessionLogRepository, EfCoreWorkoutSessionLogRepository>();
 
 
-// Bussiness
-//builder.Services.AddScoped<IGenericRepository, GenericRepository>();
-//builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<,>));
+// Bussiness 
 
 builder.Services.AddScoped<IUserProfileService, UserProfileManager>();
 builder.Services.AddScoped<IExerciseService, ExerciseManager>();
@@ -118,13 +117,25 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:4200")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                      });
+});
+
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 var app = builder.Build();
-app.UseCors(x => x
-       .AllowAnyOrigin()
-       .AllowAnyMethod()
-       .AllowAnyHeader());
+app.UseCors(MyAllowSpecificOrigins); 
+
 app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

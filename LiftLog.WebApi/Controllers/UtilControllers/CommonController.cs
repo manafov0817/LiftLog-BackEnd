@@ -12,33 +12,25 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
 
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class CommonController<T, TMap, TService> : ControllerBase
-        where T : HasUserProfileId
-        where TService : IByUserProfileService<T>
+        where T : HasId
+        where TService : IGenericService<T>
     {
         private readonly Logger Logger = LogManager.GetLogger("AuthLogger");
         private readonly IMapper _mapper;
         private readonly TService _service;
 
-        public CommonController(IMapper mapper, TService service, IUserProfileService userProfileService)
+        public CommonController(IMapper mapper, TService service)
         {
             _mapper = mapper;
             _service = service;
         }
-        private Guid GetUserProfileIdFromToken()
-        {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            return userId != null ? Guid.Parse(userId) : Guid.Empty;
-        }
-
 
         [HttpGet("getAll")]
-        public async Task<IActionResult> GetAll()
+        public virtual async Task<IActionResult> GetAll()
         {
             try
             {
-                var userProfileId = GetUserProfileIdFromToken();
-                var result = await _service.GetAllByUserProfileId(userProfileId);
+                var result = (await _service.GetAllAsync()).ToList();
 
                 var resultDTO = GetListDTO(result);
 
@@ -50,25 +42,16 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             }
         }
 
-        private List<TMap> GetListDTO(List<T> result)
-        {
-            var resultDTO = new List<TMap>();
-            foreach (var item in result)
-                resultDTO.Add(_mapper.Map<TMap>(item));
-
-            return resultDTO;
-        }
 
         [HttpGet("getById/{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public virtual async Task<IActionResult> GetById(Guid id)
         {
             try
             {
                 if (id == Guid.Empty)
                     return NotFound();
 
-                var userProfileId = GetUserProfileIdFromToken();
-                var res = await _service.GetByIdAndUserProileId(userProfileId, id);
+                var res = await _service.GetByIdAsync(id);
                 return Ok(res);
             }
             catch (Exception ex)
@@ -78,12 +61,11 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] TMap entity)
+        public virtual async Task<IActionResult> Create([FromBody] TMap entity)
         {
             try
             {
                 var model = _mapper.Map<T>(entity);
-                model.UserProfileId = GetUserProfileIdFromToken();
                 await _service.CreateAsync(model);
                 return Created();
             }
@@ -94,12 +76,10 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] T entity)
+        public virtual async Task<IActionResult> Update([FromBody] T entity)
         {
             try
             {
-                if (entity.UserProfileId != GetUserProfileIdFromToken()) return NotFound();
-
                 if (await _service.UpdateAsync(entity) > 0) return Ok("Changes have been made");
                 else return BadRequest();
             }
@@ -107,22 +87,30 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             {
                 return BadRequest(ex.Message);
             }
-        }       
+        }
 
         [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public virtual async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                var userProfileId = GetUserProfileIdFromToken();
-                var res = await _service.GetByIdAndUserProileId(userProfileId, id);
-                if (res.UserProfileId != userProfileId) return NotFound();
+                var res = await _service.GetByIdAsync(id);
+                if (res is null) return NotFound();
                 return Ok(await _service.DeleteAsync(id));
             }
             catch
             {
                 return NotFound();
             }
+        }
+
+        protected List<TMap> GetListDTO(List<T> result)
+        {
+            var resultDTO = new List<TMap>();
+            foreach (var item in result)
+                resultDTO.Add(_mapper.Map<TMap>(item));
+
+            return resultDTO;
         }
     }
 }

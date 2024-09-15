@@ -1,4 +1,4 @@
-﻿using LiftLog.Entity.Enums;
+﻿using LiftLog.Entity.Models;
 
 namespace LiftLog.WebApi.Utils.Models.Mapping.MapModels
 {

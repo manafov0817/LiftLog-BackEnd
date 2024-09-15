@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LiftLog.Data.Concrete.EfCore
 {
-    public class EfCoreProfileRepository : GenericRepository<UserProfile,EfDbContext>, IUserProfileRepository
+    public class EfCoreUserProfileRepository : GenericRepository<UserProfile,EfDbContext>, IUserProfileRepository
     {
         public async Task<UserProfile?> GetByUserId(Guid userId)
         {

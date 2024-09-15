@@ -70,11 +70,12 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 #region Repository Pattern Injections
 // Data
 builder.Services.AddScoped(typeof(IByUserProfileRepository<>), typeof(EfCoreByUserProfileRepository<>));
-builder.Services.AddScoped<IUserProfileRepository, EfCoreProfileRepository>();
+builder.Services.AddScoped<IUserProfileRepository, EfCoreUserProfileRepository>();
 builder.Services.AddScoped<IExerciseRepository, EfCoreExerciseRepository>();
 builder.Services.AddScoped<IMovementRepository, EfCoreMovementRepository>();
 builder.Services.AddScoped<IWorkoutSessionRepository, EfCoreWorkoutSessionRepository>();
 builder.Services.AddScoped<IWorkoutSessionLogRepository, EfCoreWorkoutSessionLogRepository>();
+builder.Services.AddScoped<IMuslceRepository, EfCoreMuscleRepository>();
 
 
 // Bussiness 
@@ -84,6 +85,7 @@ builder.Services.AddScoped<IExerciseService, ExerciseManager>();
 builder.Services.AddScoped<IMovementService, MovementManager>();
 builder.Services.AddScoped<IWorkoutSessionService, WorkoutSessionManager>();
 builder.Services.AddScoped<IWorkoutSessionLogService, WorkoutSessionLogManager>();
+builder.Services.AddScoped<IMuscleService, MuscleManager>();
 
 #endregion
 

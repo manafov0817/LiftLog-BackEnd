@@ -1,6 +1,6 @@
 ﻿namespace LiftLog.WebApi.Utils.Models.Mapping.MapModels
 {
-    public class HasUserProfileId
+    public class HasId
     {
         public Guid UserProfileId { get; set; }
     }

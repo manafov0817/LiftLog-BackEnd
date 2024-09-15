@@ -2,7 +2,7 @@
 using LiftLog.Business.Abstract;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LiftLog.WebApi.Controllers
+namespace LiftLog.WebApi.Controllers.Admin
 {
 
     [Route("api/[controller]")]

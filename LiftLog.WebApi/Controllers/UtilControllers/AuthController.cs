@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace LiftLog.WebApi.Controllers
+namespace LiftLog.WebApi.Controllers.UtilControllers
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -13,6 +13,8 @@ namespace LiftLog.WebApi.Utils.Models.Mapping
             CreateMap<MovementDTO, Movement>();
             CreateMap<Movement, MovementDTO>();
             CreateMap<ExerciseDTO, Exercise>();
+            CreateMap<MuscleDTO, Muscle>();
+
             CreateMap<RegisterRequestModel, UserProfile>();
         }
     }

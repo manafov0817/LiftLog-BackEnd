@@ -8,7 +8,7 @@ namespace LiftLog.Business.Concrete
 {
     public class ExerciseManager : ByUserProfileManager<Exercise, IExerciseRepository>, IExerciseService
     {
-        public ExerciseManager(IByUserProfileRepository<Exercise> repository) : base(repository)
+        public ExerciseManager(IExerciseRepository repository) : base(repository)
         { }
     }
 }

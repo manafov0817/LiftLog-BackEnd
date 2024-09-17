@@ -7,8 +7,8 @@ namespace LiftLog.Business.Concrete.Utils
         where T : class
         where TRepository : IGenericRepository<T>
     {
-        private readonly IGenericRepository<T> _repository;
-        public GenericManager(IGenericRepository<T> repository)
+        private readonly TRepository _repository;
+        public GenericManager(TRepository repository)
         {
             _repository = repository;
         }

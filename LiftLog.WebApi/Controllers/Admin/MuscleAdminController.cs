@@ -8,13 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LiftLog.WebApi.Controllers.Admin
 {
+    [Route("api/[controller]")]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class MuscleController : AdminController<Muscle, MuscleDTO, IMuscleService>
+    public class MuscleAdminController : AdminController<Muscle, MuscleDTO, IMuscleService>
     {
-        private readonly IMapper _mapper;
-        private readonly IMuscleService _service;
-
-        public MuscleController(IMapper mapper, IMuscleService service) : base(mapper, service)
-        { }
+        public MuscleAdminController(IMapper mapper, IMuscleService service) : base(mapper, service) { }
     }
 }

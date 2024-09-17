@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LiftLog.Data.Migrations
 {
     [DbContext(typeof(EfDbContext))]
-    [Migration("20240909190224_Muscles added as class")]
-    partial class Musclesaddedasclass
+    [Migration("20240917190051_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -66,6 +66,10 @@ namespace LiftLog.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("MuscleIds")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -95,19 +99,6 @@ namespace LiftLog.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Muscles");
-                });
-
-            modelBuilder.Entity("LiftLog.Entity.Models.MuscleMovement", b =>
-                {
-                    b.Property<Guid>("MovementId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MuscleId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("MovementId", "MuscleId");
-
-                    b.ToTable("MusclesMovements");
                 });
 
             modelBuilder.Entity("LiftLog.Entity.Models.UserProfile", b =>
@@ -207,15 +198,6 @@ namespace LiftLog.Data.Migrations
                     b.Navigation("Movement");
                 });
 
-            modelBuilder.Entity("LiftLog.Entity.Models.MuscleMovement", b =>
-                {
-                    b.HasOne("LiftLog.Entity.Models.Movement", null)
-                        .WithMany("MuscleMovements")
-                        .HasForeignKey("MovementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("LiftLog.Entity.Models.WorkoutSession", b =>
                 {
                     b.HasOne("LiftLog.Entity.Models.Exercise", "Exercise")
@@ -236,11 +218,6 @@ namespace LiftLog.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("WorkoutSession");
-                });
-
-            modelBuilder.Entity("LiftLog.Entity.Models.Movement", b =>
-                {
-                    b.Navigation("MuscleMovements");
                 });
 #pragma warning restore 612, 618
         }

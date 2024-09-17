@@ -47,6 +47,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireClaim("UserRole", "Admin"));
+    options.AddPolicy("LoggedIn", policy => policy.RequireClaim("UserRole", "User"));
 });
 
 builder.Services.AddDbContext<IdentityContext>(options =>

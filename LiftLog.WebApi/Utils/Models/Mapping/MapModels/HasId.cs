@@ -2,6 +2,6 @@
 {
     public class HasId
     {
-        public Guid UserProfileId { get; set; }
+        public Guid Id { get; set; }
     }
 }

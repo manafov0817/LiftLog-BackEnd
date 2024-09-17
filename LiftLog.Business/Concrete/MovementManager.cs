@@ -13,6 +13,6 @@ namespace LiftLog.Business.Concrete
 {
     public class MovementManager : ByUserProfileManager<Movement, IMovementRepository>, IMovementService
     {
-        public MovementManager(IByUserProfileRepository<Movement> repository) : base(repository) { }
+        public MovementManager(IMovementRepository repository) : base(repository) { }
     }
 }

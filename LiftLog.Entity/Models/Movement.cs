@@ -1,4 +1,5 @@
 ﻿using LiftLog.Entity.Models.CommonModels;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LiftLog.Entity.Models
 {
@@ -7,6 +8,6 @@ namespace LiftLog.Entity.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public string VideoLink { get; set; }
-        public List<MuscleMovement> MuscleMovements { get; set; }
+        public List<Guid> MuscleIds { get; set; }
     }
 }

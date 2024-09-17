@@ -51,22 +51,7 @@ namespace LiftLog.WebApi.Utils.Services.Auth
 
             if (user != null && await _userManager.CheckPasswordAsync(user, password))
             {
-
-                ClaimsIdentity claimsIdentity = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Email, userEmail),
-                });
-
-                try
-                {
-                    var userProfile = await _userProfileService.GetByUserIdAsync(Guid.Parse(user.Id));
-                    claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userProfile.Id.ToString()));
-                }
-                catch (Exception ex) { }
-
-                var userClaims = await _userManager.GetClaimsAsync(user);
-                foreach (var claim in userClaims) claimsIdentity.AddClaim(claim);
+                ClaimsIdentity claimsIdentity = await GetClaims(user);
 
                 string tokenString = _jwtTokenService.GenerateToken(claimsIdentity);
 
@@ -77,6 +62,28 @@ namespace LiftLog.WebApi.Utils.Services.Auth
 
             return (new HttpResponseMessage(HttpStatusCode.BadRequest), notFound);
         }
+
+        private async Task<ClaimsIdentity> GetClaims(User? user)
+        {
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(new[]
+            {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim("UserRole", "User")
+                });
+
+            try
+            {
+                var userProfile = await _userProfileService.GetByUserIdAsync(Guid.Parse(user.Id));
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userProfile.Id.ToString()));
+            }
+            catch (Exception ex) { }
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+            foreach (var claim in userClaims) claimsIdentity.AddClaim(claim);
+            return claimsIdentity;
+        }
+
         public async Task<(IdentityResult, User)> CreateUserAsync(RegisterRequestModel model)
         {
             var result = new IdentityResult();

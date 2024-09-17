@@ -1,19 +1,20 @@
 ﻿using AutoMapper;
-using LiftLog.Business.Abstract;
 using LiftLog.Business.Abstract.Utils;
 using LiftLog.Entity.Models.CommonModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 using System.Security.Claims;
 
 namespace LiftLog.WebApi.Controllers.UtilControllers
 {
+    [Authorize(Policy = "LoggedIn")]
     public class ByUserProfileController<T, TMap, TService> : CommonController<T, TMap, TService>
         where T : HasUserProfileId
         where TService : IByUserProfileService<T>
 
     {
-        private readonly Logger Logger = LogManager.GetLogger("AuthLogger");
+        private readonly Logger Logger = LogManager.GetLogger("CrudLogger");
         private readonly IMapper _mapper;
         private readonly TService _service;
         public ByUserProfileController(IMapper mapper, TService service) : base(mapper, service)
@@ -36,13 +37,11 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             {
                 var userProfileId = GetUserProfileIdFromToken();
                 var result = await _service.GetAllByUserProfileId(userProfileId);
-
-                var resultDTO = GetListDTO(result);
-
-                return Ok(resultDTO);
+                return Ok(result);
             }
             catch (Exception ex)
             {
+                Logger.Error($"Error while getting {nameof(T)} for {GetUserProfileIdFromToken()}=> => => =>" + ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -62,6 +61,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             }
             catch (Exception ex)
             {
+                Logger.Error($"Error while getting {nameof(T)} for {GetUserProfileIdFromToken()}=> => => =>" + ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -74,10 +74,11 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
                 var model = _mapper.Map<T>(entity);
                 model.UserProfileId = GetUserProfileIdFromToken();
                 await _service.CreateAsync(model);
-                return Created();
+                return Ok(StatusCodes.Status201Created);
             }
             catch (Exception ex)
             {
+                Logger.Error($"Error while creating {nameof(T)} for {GetUserProfileIdFromToken()}=> => => =>" + ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -94,6 +95,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             }
             catch (Exception ex)
             {
+                Logger.Error($"Error while updating {nameof(T)} for {GetUserProfileIdFromToken()}=> => => =>" + ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -108,8 +110,9 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
                 if (res.UserProfileId != userProfileId) return NotFound();
                 return Ok(await _service.DeleteAsync(id));
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error($"Error while delering {nameof(T)} for {GetUserProfileIdFromToken()}=> => => =>" + ex.Message);
                 return NotFound();
             }
         }

@@ -15,7 +15,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
         where T : HasId
         where TService : IGenericService<T>
     {
-        private readonly Logger Logger = LogManager.GetLogger("AuthLogger");
+        private readonly Logger Logger = LogManager.GetLogger("CrudLogger");
         private readonly IMapper _mapper;
         private readonly TService _service;
 
@@ -30,11 +30,9 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
         {
             try
             {
-                var result = (await _service.GetAllAsync()).ToList();
+                var result = await _service.GetAllAsync();
 
-                var resultDTO = GetListDTO(result);
-
-                return Ok(resultDTO);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -71,6 +69,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             }
             catch (Exception ex)
             {
+                Logger.Error(ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -104,13 +103,6 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             }
         }
 
-        protected List<TMap> GetListDTO(List<T> result)
-        {
-            var resultDTO = new List<TMap>();
-            foreach (var item in result)
-                resultDTO.Add(_mapper.Map<TMap>(item));
 
-            return resultDTO;
-        }
     }
 }

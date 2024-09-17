@@ -1,5 +1,6 @@
 ﻿using LiftLog.Entity.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 namespace LiftLog.Data.Concrete.EfCore.Utils
 {
     public class EfDbContext : DbContext
@@ -16,14 +17,17 @@ namespace LiftLog.Data.Concrete.EfCore.Utils
         public DbSet<Movement> Movements { get; set; }
         public DbSet<Muscle> Muscles { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
-        public DbSet<MuscleMovement> MusclesMovements { get; set; }
         public DbSet<WorkoutSessionLog> WorkoutSessionLogs { get; set; }
         public DbSet<WorkoutSession> WorkoutSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
-            modelBuilder.Entity<MuscleMovement>().HasKey(c => new { c.MovementId, c.MuscleId });
+            modelBuilder.Entity<Movement>()
+                          .Property(m => m.MuscleIds)
+                          .HasConversion(
+                              v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),  // Convert to JSON for the database
+                              v => JsonSerializer.Deserialize<List<Guid>>(v, new JsonSerializerOptions())  // Convert back to List from JSON
+                          );
         }
     }
 }

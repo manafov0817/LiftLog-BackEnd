@@ -9,7 +9,7 @@ namespace LiftLog.Business.Concrete.Utils
     {
 
         private readonly IByUserProfileRepository<T> _repository;
-        public ByUserProfileManager(IByUserProfileRepository<T> repository) : base(repository)
+        public ByUserProfileManager(TRepository repository) : base(repository)
         {
             _repository = repository;
         }

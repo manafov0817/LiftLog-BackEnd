@@ -8,7 +8,7 @@ namespace LiftLog.Data.Concrete.EfCore.Utils
         where TEntity : HasId
         where TContext : DbContext, new()
     {
-        public async Task<int> CreateAsync(TEntity entity)
+        public virtual async Task<int> CreateAsync(TEntity entity)
         {
             using (var context = new TContext())
             {

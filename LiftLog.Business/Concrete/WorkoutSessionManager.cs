@@ -8,6 +8,6 @@ namespace LiftLog.Business.Concrete
 {
     public class WorkoutSessionManager : ByUserProfileManager<WorkoutSession, IWorkoutSessionRepository>, IWorkoutSessionService
     {
-        public WorkoutSessionManager(IByUserProfileRepository<WorkoutSession> repository) : base(repository) { }
+        public WorkoutSessionManager(IWorkoutSessionRepository repository) : base(repository) { }
     }
 }

@@ -11,7 +11,7 @@ namespace LiftLog.Data.Concrete.EfCore.Utils
         {
             using (var context = new EfDbContext())
             {
-                return await context.Set<T>().Where(en => en.UserProfileId == userProfileId).ToListAsync();
+                return await context.Set<T>().Where(en => en.UserProfileId == userProfileId).OrderByDescending(x => x.UpdateDateTime).ToListAsync();
             }
         }
         public virtual async Task<T> GetByIdAndUserProileId(Guid userProfileId, Guid id)

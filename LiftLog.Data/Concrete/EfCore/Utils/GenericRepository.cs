@@ -12,6 +12,8 @@ namespace LiftLog.Data.Concrete.EfCore.Utils
         {
             using (var context = new TContext())
             {
+                entity.UpdateDateTime = DateTime.UtcNow;
+                entity.AddDateTime = DateTime.UtcNow;
                 await context.Set<TEntity>().AddAsync(entity);
                 var res = await context.SaveChangesAsync();
                 return res;
@@ -48,6 +50,7 @@ namespace LiftLog.Data.Concrete.EfCore.Utils
         {
             using (var context = new TContext())
             {
+                entity.UpdateDateTime = DateTime.UtcNow;
                 context.Entry(entity).State = EntityState.Modified;
                 return await context.SaveChangesAsync();
             }

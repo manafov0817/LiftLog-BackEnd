@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LiftLog.Business.Abstract.Utils;
+using LiftLog.Entity.Models;
 using LiftLog.Entity.Models.CommonModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,7 @@ using System.Security.Claims;
 namespace LiftLog.WebApi.Controllers.UtilControllers
 {
     [Authorize(Policy = "LoggedIn")]
-    public class ByUserProfileController<T, TMap, TService> : CommonController<T, TMap, TService>
+    public class ByUserProfileController<T, TMap, TService> : GenericController<T, TMap, TService>
         where T : HasUserProfileId
         where TService : IByUserProfileService<T>
 
@@ -37,6 +38,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             {
                 var userProfileId = GetUserProfileIdFromToken();
                 var result = await _service.GetAllByUserProfileId(userProfileId);
+                Logger.Info($"Multiple {nameof(T)} returned for user {userProfileId}");
                 return Ok(result);
             }
             catch (Exception ex)
@@ -57,6 +59,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
 
                 var userProfileId = GetUserProfileIdFromToken();
                 var res = await _service.GetByIdAndUserProileId(userProfileId, id);
+                Logger.Info($"{nameof(T)} returned for user {userProfileId}");
                 return Ok(res);
             }
             catch (Exception ex)
@@ -67,13 +70,14 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
         }
 
         [HttpPost("create")]
-        public override async Task<IActionResult> Create([FromBody] TMap entity)
+        public override async Task<IActionResult> Create([FromBody] TMap model)
         {
             try
             {
-                var model = _mapper.Map<T>(entity);
-                model.UserProfileId = GetUserProfileIdFromToken();
-                await _service.CreateAsync(model);
+                var entity = _mapper.Map<T>(model);
+                entity.UserProfileId = GetUserProfileIdFromToken();
+                await _service.CreateAsync(entity);
+                Logger.Info($"{nameof(T)} created for user {entity.UserProfileId}");
                 return Ok(StatusCodes.Status201Created);
             }
             catch (Exception ex)
@@ -84,13 +88,20 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
         }
 
         [HttpPut("update")]
-        public override async Task<IActionResult> Update([FromBody] T entity)
+        public override async Task<IActionResult> Update([FromBody] T model)
         {
             try
             {
-                if (entity.UserProfileId != GetUserProfileIdFromToken()) return NotFound();
+                var userProfileId = GetUserProfileIdFromToken();
+                var entity = await _service.GetByIdAndUserProileId(userProfileId, model.Id);
+                if (entity is null) return NotFound();
 
-                if (await _service.UpdateAsync(entity) > 0) return Ok("Changes have been made");
+                model.UserProfileId = userProfileId;
+                if (await _service.UpdateAsync(model) > 0)
+                {
+                    Logger.Info($"{nameof(T)} updated for user {entity.UserProfileId}");
+                    return Ok(StatusCodes.Status202Accepted);
+                }
                 else return BadRequest();
             }
             catch (Exception ex)
@@ -106,9 +117,15 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
             try
             {
                 var userProfileId = GetUserProfileIdFromToken();
-                var res = await _service.GetByIdAndUserProileId(userProfileId, id);
-                if (res.UserProfileId != userProfileId) return NotFound();
-                return Ok(await _service.DeleteAsync(id));
+                var entity = await _service.GetByIdAndUserProileId(userProfileId, id);
+                if (entity.UserProfileId != userProfileId) return NotFound();
+
+                if (await _service.DeleteAsync(id) > 0)
+                {
+                    Logger.Info($"{nameof(T)} deleted for user {entity.UserProfileId}");
+                    return Ok(StatusCodes.Status202Accepted);
+                }
+                else return BadRequest(StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {

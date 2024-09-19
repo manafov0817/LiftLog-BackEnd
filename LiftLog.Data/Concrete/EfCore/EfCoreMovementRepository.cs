@@ -6,6 +6,6 @@ using Microsoft.EntityFrameworkCore;
 namespace LiftLog.Data.Concrete.EfCore
 {
     public class EfCoreMovementRepository : EfCoreByUserProfileRepository<Movement>, IMovementRepository
-    {    }
+    { }
 
 }

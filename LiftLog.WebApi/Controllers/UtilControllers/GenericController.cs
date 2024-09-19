@@ -1,17 +1,15 @@
 ﻿using AutoMapper;
-using LiftLog.Business.Abstract;
 using LiftLog.Business.Abstract.Utils;
 using LiftLog.Entity.Models.CommonModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
-using System.Security.Claims;
 
 namespace LiftLog.WebApi.Controllers.UtilControllers
 {
 
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class CommonController<T, TMap, TService> : ControllerBase
+    public class GenericController<T, TMap, TService> : ControllerBase
         where T : HasId
         where TService : IGenericService<T>
     {
@@ -19,7 +17,7 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
         private readonly IMapper _mapper;
         private readonly TService _service;
 
-        public CommonController(IMapper mapper, TService service)
+        public GenericController(IMapper mapper, TService service)
         {
             _mapper = mapper;
             _service = service;
@@ -102,7 +100,5 @@ namespace LiftLog.WebApi.Controllers.UtilControllers
                 return NotFound();
             }
         }
-
-
     }
 }

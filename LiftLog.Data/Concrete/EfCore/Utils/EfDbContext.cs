@@ -7,7 +7,9 @@ namespace LiftLog.Data.Concrete.EfCore.Utils
     {
         // Add many to many database muscles <-> movements
         public EfDbContext() { }
-        public EfDbContext(DbContextOptions<EfDbContext> options) : base(options) { }
+        public EfDbContext(DbContextOptions<EfDbContext> options) : base(options) {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql("Server=localhost;User Id=postgres;Password=maqa1221;Port=5433;Database=LiftLogDb");

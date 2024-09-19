@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace LiftLog.WebApi.Controllers.UtilControllers
 {
     [Authorize(Policy = "AdminOnly")]
-    public class AdminController<T, TMap, TService> : CommonController<T, TMap, TService>
+    public class AdminController<T, TMap, TService> : GenericController<T, TMap, TService>
         where T : HasId
         where TService : IGenericService<T>
     {
